@@ -55,6 +55,9 @@ const HIDDEN_CATEGORIES = ["Breakfast", "Goat"];
 
 const MAX_AREAS = 10;
 
+// A day counts as "on goal" when calories are within this range of the goal (10%)
+const GOAL_TOLERANCE = 0.1;
+
 // Shows the green "success" SweetAlert popup after logging an item
 function showLoggedAlert(title, name, amountText, calories) {
   if (typeof window.Swal === "undefined") {
@@ -639,14 +642,18 @@ class App {
     $("#logged-items-list").innerHTML =
       items.length > 0 ? items.slice().reverse().map(loggedItemRow).join("") : emptyLogState();
 
-    // Average only over days that actually have logged items (empty days don't drag it down)
-    const loggedDays = week.filter((day) => day.itemCount > 0);
-    const totalCalories = loggedDays.reduce((sum, day) => sum + day.calories, 0);
+    // Weekly average = total calories of the 7 days / 7
+    const totalCalories = week.reduce((sum, day) => sum + day.calories, 0);
+
+    // A day is "on goal" when its calories are within ±10% of the daily goal
+    const minGoal = GOALS.calories * (1 - GOAL_TOLERANCE);
+    const maxGoal = GOALS.calories * (1 + GOAL_TOLERANCE);
+
     $("#weekly-days").innerHTML = weeklyDays(week);
     $("#weekly-stats").innerHTML = weeklyStats({
-      average: loggedDays.length > 0 ? Math.round(totalCalories / loggedDays.length) : 0,
+      average: Math.round(totalCalories / 7),
       items: week.reduce((sum, day) => sum + day.itemCount, 0),
-      onGoal: week.filter((day) => day.calories > 0 && day.calories <= GOALS.calories).length,
+      onGoal: week.filter((day) => day.calories >= minGoal && day.calories <= maxGoal).length,
     });
   }
 
