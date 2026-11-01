@@ -55,10 +55,9 @@ const HIDDEN_CATEGORIES = ["Breakfast", "Goat"];
 
 const MAX_AREAS = 10;
 
-// A day counts as "on goal" when calories are within this range of the goal (10%)
 const GOAL_TOLERANCE = 0.1;
 
-// Shows the green "success" SweetAlert popup after logging an item
+
 function showLoggedAlert(title, name, amountText, calories) {
   if (typeof window.Swal === "undefined") {
     console.warn("SweetAlert2 is not loaded. Check the script URL in index.html");
@@ -229,19 +228,17 @@ class App {
       this.loadMeals(area ? "area" : "default", area);
     });
 
-    // One delegated listener for the whole categories section
     $("#meal-categories-section").addEventListener("click", (event) => {
       const card = event.target.closest("[data-category]");
       if (card) {
         const category = card.dataset.category;
         const isActive = this.filter.type === "category" && this.filter.value === category;
-        // Clicking the active category again clears the filter
+       
         if (isActive) this.loadMeals("default", "");
         else this.loadMeals("category", category);
         return;
       }
 
-      // "View All" button
       if (event.target.closest("button")) this.loadMeals("default", "");
     });
 
@@ -346,14 +343,12 @@ class App {
     this.searchTimer = setTimeout(() => {
       const query = text.trim();
       const type = query ? "search" : "default";
-      // Skip if nothing really changed
       if (this.filter.type === type && this.filter.value === query) return;
       this.loadMeals(type, query);
     }, 400);
   }
 
   async loadMeals(type, value) {
-    // Cancel any pending search so it can't override this filter later
     clearTimeout(this.searchTimer);
     this.filter = { type: type, value: value };
     this.highlightFilters();
@@ -642,10 +637,10 @@ class App {
     $("#logged-items-list").innerHTML =
       items.length > 0 ? items.slice().reverse().map(loggedItemRow).join("") : emptyLogState();
 
-    // Weekly average = total calories of the 7 days / 7
+   
     const totalCalories = week.reduce((sum, day) => sum + day.calories, 0);
 
-    // A day is "on goal" when its calories are within ±10% of the daily goal
+    
     const minGoal = GOALS.calories * (1 - GOAL_TOLERANCE);
     const maxGoal = GOALS.calories * (1 + GOAL_TOLERANCE);
 
